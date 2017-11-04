@@ -43,8 +43,9 @@ ssize_t nrecv(int sock, void *buf, size_t len, int flags) {
 }
 
 typedef struct {
-	long ts;
-	char buf[LEN - sizeof(long)];
+    long seq;
+    long ts;
+	char buf[LEN - sizeof(long) - sizeof(long)];
 } DataWrapper;
 
 int main(int argc, char *argv[])
@@ -75,7 +76,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < N; i++) {
         int nrcv = nrecv(sock, &dw, sizeof(dw), 0);
         assert(nrcv == sizeof(dw));
-        printf("%ld\n", getts() - dw.ts);
+        printf("%ld\t%ld\n", dw.seq, getts() - dw.ts);
     }
 }
 

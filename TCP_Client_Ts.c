@@ -75,8 +75,9 @@ bool GetToken(TokenBucket *tb, size_t need)
 
 
 typedef struct {
+    long seq;
 	long ts;
-	char buf[LEN - sizeof(long)];
+	char buf[LEN - sizeof(long) - sizeof(long)];
 } DataWrapper;
 
 int main(int argc, char *argv[])
@@ -110,7 +111,7 @@ int main(int argc, char *argv[])
         if (GetToken(&tb, sizeof(dw)) == false)
             continue;
         
-        i++;
+        dw.seq = i++;
         dw.ts = GetTS();
         send(sock, &dw, sizeof(dw), 0);
     }
