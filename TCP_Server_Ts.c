@@ -50,13 +50,6 @@ typedef struct {
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2) {
-        printf("Usage: cmd N\n");
-        return -1;
-    }
-    
-    int N = atoi(argv[1]);
-    
     int listensock = socket(PF_INET, SOCK_STREAM, 0);
     int opt = 1;
     setsockopt(listensock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
@@ -69,12 +62,13 @@ int main(int argc, char *argv[])
     listen(listensock, 128);
     int sock = accept(listensock, NULL, NULL);
     int on = 1;
-    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
+    assert(setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on)) == 0);
 
     DataWrapper dw;
-
-    for (int i = 0; i < N; i++) {
+    
+    while (true) {
         int nrcv = nrecv(sock, &dw, sizeof(dw), 0);
+        if (nrcv <= 0) break;
         assert(nrcv == sizeof(dw));
         printf("%ld\t%ld\n", dw.seq, getts() - dw.ts);
     }

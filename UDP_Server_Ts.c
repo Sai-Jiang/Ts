@@ -29,13 +29,6 @@ typedef struct {
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2) {
-        printf("Usage: cmd N\n");
-        return -1;
-    }
-    
-    int N = atoi(argv[1]);
-    
     int sock = socket(PF_INET, SOCK_DGRAM, 0);
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
@@ -43,11 +36,14 @@ int main(int argc, char *argv[])
     addr.sin_addr.s_addr = htons(INADDR_ANY);
     addr.sin_port = htons(7777);
     assert(bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == 0);
+    struct timeval to = {10, 0};
+    assert(setsockopt(sock, SOL_SOCKET SO_RCVTIMEO, &to, sizeof(to)) == 0);
     
     DataWrapper dw;
 
-    for (int i = 0; i < N; i++) {
+    while (true) {
         int nrcv = recv(sock, &dw, sizeof(dw), 0);
+        if (nrcv <= 0) break;
         assert(nrcv == sizeof(dw));
         printf("%ld\t%ld\n", dw.seq, getts() - dw.ts);
     }
